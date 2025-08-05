@@ -28,7 +28,7 @@ mvn spring-boot:run
 | `POST`  | `/predictions/predict-batch`  | Upload CSV vers FastAPI, récupère les prédictions     |
 | `GET`   | `/predictions/predictionList` | Récupère l'historique des prédictions d’un client     |
 
-🔁 Communication avec l’API FastAPI (Partie Data)
+####🔁 Communication avec l’API FastAPI (Partie Data)
 Le backend Spring communique avec l'API FastAPI via HTTP :
 
 Upload du fichier CSV (transactions) :
@@ -48,8 +48,6 @@ Enregistrement de chaque prédiction : /predictions/predict
 
 📤 Exemple de JSON reçu depuis FastAPI
 json
-Copier
-Modifier
 {
   "client": {
     "CLI_id": 12345,
