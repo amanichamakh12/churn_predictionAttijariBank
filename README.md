@@ -1,39 +1,55 @@
-# churn_predictionAttijariBank la partie Back and front
+# 💼 churn_predictionAttijariBank – Backend & Frontend
 
-🚀 Lancer le projet
-✅ Prérequis
-JDK 17 ou + installé
-Maven installé (mvn -v)
-PostgreSQL 
+Ce dépôt contient la partie **Backend Spring Boot** (et Frontend ) du projet de prédiction de churn client
 
-✅Commande pour exécuter
+---
+
+## 🚀 Lancer le projet
+
+### ✅ Prérequis
+
+- Java JDK 17+
+- Maven (`mvn -v`)
+- PostgreSQL (base de données configurée)
+- react js
+
+---
+
+### ▶️ Exécution Backend
+
+```bash
 mvn spring-boot:run
 
-🌐 Endpoints principaux
-📥 /clients/save
-→ Enregistrer un nouveau client (appelé par le service ML)
+| Méthode | Endpoint                      | Description                                           |
+| ------- | ----------------------------- | ----------------------------------------------------- |
+| `POST`  | `/clients/save`               | Enregistre un client (appelé par FastAPI)             |
+| `POST`  | `/clients/receive-csv`        | Sauvegarde une liste de clients depuis un fichier CSV |
+| `POST`  | `/predictions/predict`        | Enregistre une prédiction individuelle                |
+| `POST`  | `/predictions/predict-batch`  | Upload CSV vers FastAPI, récupère les prédictions     |
+| `GET`   | `/predictions/predictionList` | Récupère l'historique des prédictions d’un client     |
 
-📤 /clients/receive-csv
-→ Enregistrer une liste de clients depuis un fichier CSV
+🔁 Communication avec l’API FastAPI (Partie Data)
+Le backend Spring communique avec l'API FastAPI via HTTP :
 
-📊 /predictions/predict
-→ Enregistrer une prédiction individuelle depuis FastAPI
+Upload du fichier CSV (transactions) :
+POST http://127.0.0.1:8000/process-csv
 
-📦 /predictions/predict-batch
-→ Envoyer un fichier CSV vers FastAPI, recevoir et stocker les prédictions
+⚙️ Pipeline côté FastAPI :
+Nettoyage & transformation des données (churn_data_processing.py)
 
-📜 /predictions/predictionList
-→ Afficher l’historique des prédictions d’un client donné
+Prédiction pour chaque client
 
-🔁 Communication avec FastAPI
-Le backend envoie les données brutes ou traitées à une API FastAPI externe, qui :
+Retour des résultats (client + prédiction)
 
-Prétraite les données (churn_data_processing.py)
+⚙️ Côté Backend :
+Sauvegarde des nouveaux clients : /clients/save
 
-Effectue la prédiction
+Enregistrement de chaque prédiction : /predictions/predict
 
-Retourne les résultats au backend qui les enregistre dans la base de données
-🔁Exemple de JSON body recue:
+📤 Exemple de JSON reçu depuis FastAPI
+json
+Copier
+Modifier
 {
   "client": {
     "CLI_id": 12345,
@@ -55,21 +71,24 @@ Retourne les résultats au backend qui les enregistre dans la base de données
   "probability": 0.86,
   "causes_probables": "Le client effectue peu de transactions, le volume global de dépenses est faible, et la variété des produits utilisés est limitée."
 }
-
-
-✅ Exemple de scenario de test avec postman
-Tu uploades un CSV dans http://localhost:8090/predictions/predict-batch (post request)
-
-Le backend envoie ce fichier à FastAPI dans http://127.0.0.1:8000/process-csv ==>FastAPI prétraite + prédit
-
-Les résultats sont retournés au backend
+🧪 Exemple de Scénario de Test avec Postman
+🔸 Étapes de test :
+POST vers :
+http://localhost:8090/predictions/predict-batch
+→ Upload d’un fichier .csv contenant les transactions brutes
 
 Le backend :
 
-Enregistre chaque client s’il est nouveau
+Envoie le fichier à FastAPI (/process-csv)
 
-Sauvegarde chaque prédiction
+FastAPI traite, prédit et renvoie les résultats
 
-Tu consultes /predictionList pour voir l’historique
+Backend :
 
+Sauvegarde chaque client (/clients/save)
 
+Enregistre chaque prédiction (/predictions/predict)
+
+GET vers :
+http://localhost:8090/predictions/predictionList?cli_id=12345
+→ Pour consulter l’historique des prédictions d’un client donné
