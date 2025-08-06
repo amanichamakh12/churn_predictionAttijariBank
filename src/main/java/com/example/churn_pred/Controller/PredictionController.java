@@ -103,20 +103,25 @@ public class PredictionController {
     }
     @PostMapping("/predict")
     public ResponseEntity<String> receivePrediction(@RequestBody PredictionRequest request) {
-        clientService.updateClient(request.getClient());
+        Client client = clientService.enregistrerClient(request);
+        clientService.updateClient(client);
 
-        clientService.enregistrerClient(request);
         Prediction prediction = new Prediction();
-        prediction.setClient(request.getClient()); // suppose que ta classe Prediction contient un champ "Client client"
+        prediction.setClient(request.getClient());
         prediction.setChurnPred(request.getPredictionValue());
         prediction.setChurnProb(request.getProbability());
         prediction.setReason(request.getReason());
+        prediction.setRecommandation(request.getRecommandation());
         prediction.setDatePrediction(LocalDateTime.now());
 
         predictionRepository.save(prediction);
         return ResponseEntity.ok("Prediction received and saved successfully.");
     }
 
+    @GetMapping("/risque")
+    public List<Client> getClientsARisque() {
+        return predictionService.getClientsARisque();
+    }
 
 
     @GetMapping("/predictionList")

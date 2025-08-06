@@ -7,7 +7,7 @@ public class PredictionRequest {
     private double probability;
     private String predictionValue;
     private String reason;
-
+    private String recommandation;
     public Client getClient() {
         return client;
     }
@@ -30,6 +30,14 @@ public class PredictionRequest {
 
     public void setPredictionValue(String predictionValue) {
         this.predictionValue = predictionValue;
+    }
+
+    public String getRecommandation() {
+        return recommandation;
+    }
+
+    public void setRecommandation(String recommandation) {
+        this.recommandation = recommandation;
     }
 
     public String getReason() {

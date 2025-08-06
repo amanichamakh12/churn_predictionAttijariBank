@@ -19,35 +19,50 @@ public class clientService implements IclientService {
     @Autowired
     private clientRepo cr;
 
+
     @Override
-    public void enregistrerClient(PredictionRequest predRequest) {
+    public Client enregistrerClient(PredictionRequest predRequest) {
         Client newclient = predRequest.getClient();
-        Client cl = new Client();
-        cl.setAge(newclient.getAge());
-        cl.setAnciennete(newclient.getAnciennete());
-        cl.setCli(newclient.getCli());
-        cl.setDernier_montant(newclient.getDernier_montant());
-        cl.setMontant_min(newclient.getMontant_min());
-        cl.setMontant_max(newclient.getMontant_max());
-        cl.setNbenf(newclient.getNbenf());
-        cl.setSeg(newclient.getSeg());
-        cl.setSext(newclient.getSext());
-        cl.setMontant_moyen(newclient.getMontant_moyen());
-        cl.setMontant_total(newclient.getMontant_total());
-        cl.setNb_libelles_produits(newclient.getNb_libelles_produits());
-        cl.setNb_types_produits(newclient.getNb_types_produits());
-        cl.setNb_transactions(newclient.getNb_transactions());
-        cr.save(cl);
+
+        // Étape 1 : log des infos reçues
+        System.out.println("📥 Données reçues du client : " + newclient);
+
+        Optional<Client> existingClientOpt = cr.findByCli(newclient.getCli());
+
+        if (existingClientOpt.isPresent()) {
+            System.out.println("✅ Client existe déjà avec le CLI : " + newclient.getCli());
+
+            // Étape 2 : log avant mise à jour
+            System.out.println("🔄 Mise à jour du client existant...");
+
+            updateClient(newclient);
+
+            System.out.println("✅ Mise à jour terminée.");
+            return existingClientOpt.get();
+        } else {
+            System.out.println("🆕 Nouveau client détecté. Enregistrement en cours...");
+
+            // Étape 3 : log des champs à sauvegarder
+            System.out.println("🎯 Champs du nouveau client à sauvegarder :");
+            System.out.println(" - Age : " + newclient.getAge());
+            System.out.println(" - Ancienneté : " + newclient.getAnciennete());
+            System.out.println(" - Dernier montant : " + newclient.getDernier_montant());
+            System.out.println(" - CLI : " + newclient.getCli());
+
+            Client savedClient = cr.save(newclient);
+
+            System.out.println("✅ Client enregistré avec ID : " + savedClient.getCli());
+            return savedClient;
+        }
     }
 
-    public void updateClient(Client newClientData) {
+
+    public String updateClient(Client newClientData) {
+
         Optional<Client> existingClientOpt = cr.findByCli(newClientData.getCli());
 
         if (existingClientOpt.isPresent()) {
             Client existingClient = existingClientOpt.get();
-
-            // Mise à jour des champs
-            existingClient.setCli(newClientData.getCli());
             existingClient.setAge(newClientData.getAge());
             existingClient.setAnciennete(newClientData.getAnciennete());
             existingClient.setDernier_montant(newClientData.getDernier_montant());
@@ -63,10 +78,13 @@ public class clientService implements IclientService {
             existingClient.setNb_transactions(newClientData.getNb_transactions());
 
             cr.save(existingClient);
+            System.out.println("Client mis à jour avec succès : " + existingClient.getCli());
         } else {
             cr.save(newClientData);
         }
+        return "Client sauvegardé ou mis à jour";
     }
+
 
     public String saveClientsFromCsv(MultipartFile file) {
         List<Client> clients = new ArrayList<>();

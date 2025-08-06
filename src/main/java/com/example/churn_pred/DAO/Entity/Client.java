@@ -1,7 +1,7 @@
 package com.example.churn_pred.DAO.Entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -18,10 +18,17 @@ import java.util.List;
 
 public class Client {
     @Id
-    @Column(name = "cli")  // Spécifie que c'est la colonne 'cli' en base
+    @Column(name = "cli")
+    @JsonProperty("CLI_id")
     private Long cli;
+
+    @JsonProperty("SEXT")
     private String sext;
+
+    @JsonProperty("NBENF")
     private float nbenf;
+
+    @JsonProperty("SEG")
     private float seg;
 
     private Integer nb_transactions;

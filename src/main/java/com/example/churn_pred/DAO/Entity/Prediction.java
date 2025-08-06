@@ -26,12 +26,13 @@ public class Prediction {
 
     private String churnPred;
 
-    private String modelVersion;
 
     @Column(columnDefinition = "TEXT")
     private String reason;
 
-    private String commentaire;
+    @Column(columnDefinition = "TEXT")
+    private String recommandation;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id")
@@ -42,60 +43,52 @@ public class Prediction {
         return idPred;
     }
 
-    public LocalDateTime getDatePrediction() {
-        return datePrediction;
-    }
-
-    public double getChurnProb() {
-        return churnProb;
-    }
-
-    public String getChurnPred() {
-        return churnPred;
-    }
-
-    public String getModelVersion() {
-        return modelVersion;
-    }
-
-    public String getReason() {
-        return reason;
-    }
-
-    public String getCommentaire() {
-        return commentaire;
-    }
-
-    public Client getClient() {
-        return client;
-    }
-
     public void setIdPred(Long idPred) {
         this.idPred = idPred;
+    }
+
+    public LocalDateTime getDatePrediction() {
+        return datePrediction;
     }
 
     public void setDatePrediction(LocalDateTime datePrediction) {
         this.datePrediction = datePrediction;
     }
 
+    public double getChurnProb() {
+        return churnProb;
+    }
+
     public void setChurnProb(double churnProb) {
         this.churnProb = churnProb;
+    }
+
+    public String getChurnPred() {
+        return churnPred;
     }
 
     public void setChurnPred(String churnPred) {
         this.churnPred = churnPred;
     }
 
-    public void setModelVersion(String modelVersion) {
-        this.modelVersion = modelVersion;
+    public String getReason() {
+        return reason;
     }
 
     public void setReason(String reason) {
         this.reason = reason;
     }
 
-    public void setCommentaire(String commentaire) {
-        this.commentaire = commentaire;
+    public String getRecommandation() {
+        return recommandation;
+    }
+
+    public void setRecommandation(String recommandation) {
+        this.recommandation = recommandation;
+    }
+
+    public Client getClient() {
+        return client;
     }
 
     public void setClient(Client client) {

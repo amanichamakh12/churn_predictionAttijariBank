@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface predRepo extends JpaRepository<Prediction,Long> {
     List<Prediction> findPredictionByClient(Client client);
+
 }
