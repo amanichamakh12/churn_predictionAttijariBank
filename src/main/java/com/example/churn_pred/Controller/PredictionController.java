@@ -24,6 +24,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("predictions")
+@CrossOrigin(origins = "http://localhost:5175")
 public class PredictionController {
     private final MLservice mlService;
     private final clientService clientService;
@@ -40,7 +41,9 @@ public class PredictionController {
     }
 
     @PostMapping("/predict-batch")
-    public ResponseEntity<String> predictBatch(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<List<Map<String, Object>>> predictBatch(@RequestParam("file") MultipartFile file) {
+        List<Map<String, Object>> predictionResults = new ArrayList<>();
+
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
@@ -75,7 +78,7 @@ public class PredictionController {
                     for (JsonNode predictionNode : predictions) {
                         String predictionValue = predictionNode.get("prediction").asText();
                         double probability = predictionNode.get("probabilite").asDouble();
-                        String causes = predictionNode.get("causes_probables").asText();
+                        String causes = predictionNode.get("reason").asText();
                         Long cliId = predictionNode.get("CLI_id").asLong();
                         Optional<Client> optionalClient = clientRepository.findById(cliId);
                         if (optionalClient.isPresent()) {
@@ -86,19 +89,24 @@ public class PredictionController {
                             prediction.setReason(causes);
                             prediction.setDatePrediction(LocalDateTime.now());
                             predictionRepository.save(prediction);
+                            Map<String, Object> result = new HashMap<>();
+                            result.put("cli_id", cliId);
+                            result.put("prediction", predictionValue);
+                            result.put("probabilite", probability);
+                            result.put("reason", causes);
+                            predictionResults.add(result);
                         }
 
 
                     }
                 }
-                return ResponseEntity.ok("Prédictions enregistrées avec succès.");
+                return ResponseEntity.ok(predictionResults);
             } else {
-                return ResponseEntity.status(response.getStatusCode()).body("Erreur lors de l'appel à FastAPI : " + response.getBody());
+                return ResponseEntity.ok(predictionResults);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur serveur: " + e.getMessage());
+            return ResponseEntity.ok(predictionResults);
         }
     }
     @PostMapping("/predict")
