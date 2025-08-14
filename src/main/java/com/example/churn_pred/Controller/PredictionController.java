@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -19,12 +20,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @RestController
 @RequestMapping("predictions")
-@CrossOrigin(origins = "http://localhost:5175")
+@CrossOrigin(origins = "http://localhost:5173")
 public class PredictionController {
     private final MLservice mlService;
     private final clientService clientService;
@@ -131,14 +134,29 @@ public class PredictionController {
         return predictionService.getClientsARisque();
     }
 
+    @GetMapping("/summary")
+    public Map<String, Object> getChurnSummary(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate) {
 
-    @GetMapping("/predictionList")
-    public ResponseEntity<List<Prediction>> getPredictioByClient(@RequestBody Client cli){
-        List<Prediction> predHistory = predictionService.getPredByUser(cli);
 
-        return ResponseEntity.ok(predHistory);
+        long total = predictionRepository.countAll();
+        long churn = predictionRepository.countChurn();
+
+        double churnRate = total == 0 ? 0 : (churn * 100.0) / total;
+
+               Map<String, Object> response = new HashMap<>();
+        response.put("globalChurnRate", churnRate);
+        response.put("totalClients", total);
+        response.put("churnCount", churn);
+
+
+        return response;
     }
-
-
-
 }
+
+
+
+
+
+

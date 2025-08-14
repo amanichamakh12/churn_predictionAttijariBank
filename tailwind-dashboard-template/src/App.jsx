@@ -12,6 +12,7 @@ import './charts/ChartjsConfig.jsx';
 // Import pages
 import Dashboard from './pages/Dashboard.jsx';
 import BatchPredictionPage from "./components/BatchPredictionPage.jsx";
+import ManualPrediction from "./components/manualPrediction.jsx";
 
 function App() {
 
@@ -29,6 +30,8 @@ function App() {
 
         <Route exact path="/" element={<Dashboard />} />
         <Route path="/batch-prediction" element={<BatchPredictionPage />} />
+        <Route path="/manual-prediction" element={<ManualPrediction />} />
+
 
       </Routes>
     </>

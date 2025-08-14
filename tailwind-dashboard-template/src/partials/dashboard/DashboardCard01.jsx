@@ -1,121 +1,172 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import LineChart from '../../charts/LineChart01.jsx';
-import { chartAreaGradient } from '../../charts/ChartjsConfig.jsx';
-import EditMenu from '../../components/DropdownEditMenu.jsx';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import BarChart from '../../charts/BarChart01.jsx'; // ton composant Chart.js
 
-// Import utilities
-import { adjustColorOpacity, getCssVariable } from '../../utils/Utils.js';
+function PredictionsSummaryCard() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [summary, setSummary] = useState(null);
+  const [chartData, setChartData] = useState(null);
 
-function DashboardCard01() {
+  useEffect(() => {
+    const source = axios.CancelToken.source();
 
-  const chartData = {
-    labels: [
-      '12-01-2022',
-      '01-01-2023',
-      '02-01-2023',
-      '03-01-2023',
-      '04-01-2023',
-      '05-01-2023',
-      '06-01-2023',
-      '07-01-2023',
-      '08-01-2023',
-      '09-01-2023',
-      '10-01-2023',
-      '11-01-2023',
-      '12-01-2023',
-      '01-01-2024',
-      '02-01-2024',
-      '03-01-2024',
-      '04-01-2024',
-      '05-01-2024',
-      '06-01-2024',
-      '07-01-2024',
-      '08-01-2024',
-      '09-01-2024',
-      '10-01-2024',
-      '11-01-2024',
-      '12-01-2024',
-      '01-01-2025',
-    ],
-    datasets: [
-      // Indigo line
-      {
-        data: [732, 610, 610, 504, 504, 504, 349, 349, 504, 342, 504, 610, 391, 192, 154, 273, 191, 191, 126, 263, 349, 252, 423, 622, 470, 532],
-        fill: true,
-        backgroundColor: function(context) {
-          const chart = context.chart;
-          const {ctx, chartArea} = chart;
-          return chartAreaGradient(ctx, chartArea, [
-            { stop: 0, color: adjustColorOpacity(getCssVariable('--color-violet-500'), 0) },
-            { stop: 1, color: adjustColorOpacity(getCssVariable('--color-violet-500'), 0.2) }
-          ]);
-        },            
-        borderColor: getCssVariable('--color-violet-500'),
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 3,
-        pointBackgroundColor: getCssVariable('--color-violet-500'),
-        pointHoverBackgroundColor: getCssVariable('--color-violet-500'),
-        pointBorderWidth: 0,
-        pointHoverBorderWidth: 0,
-        clip: 20,
-        tension: 0.2,
-      },
-      // Gray line
-      {
-        data: [532, 532, 532, 404, 404, 314, 314, 314, 314, 314, 234, 314, 234, 234, 314, 314, 314, 388, 314, 202, 202, 202, 202, 314, 720, 642],
-        borderColor: adjustColorOpacity(getCssVariable('--color-gray-500'), 0.25),
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 3,
-        pointBackgroundColor: adjustColorOpacity(getCssVariable('--color-gray-500'), 0.25),
-        pointHoverBackgroundColor: adjustColorOpacity(getCssVariable('--color-gray-500'), 0.25),
-        pointBorderWidth: 0,
-        pointHoverBorderWidth: 0,
-        clip: 20,
-        tension: 0.2,
-      },
-    ],
-  };
+    async function fetchSummary() {
+      setLoading(true);
+      setError(null);
+      try {
+        const resp = await axios.get("http://localhost:8090/predictions/summary", {
+          cancelToken: source.token,
+          // si tu as besoin d'envoyer des params (ex: startDate) tu peux les ajouter ici
+          // params: { startDate: '2025-08-01T00:00:00' }
+        });
+
+        const data = resp.data;
+        setSummary(data);
+
+        // Si l'API renvoie déjà churnVsNonChurn: { churn: n, nonChurn: m }
+        if (data.churnVsNonChurn) {
+          setChartData({
+            labels: data.churnVsNonChurn.labels || ["Churn", "Non-Churn"],
+            datasets: [
+              {
+                label: "Churn",
+                data: [data.churnVsNonChurn.churn ?? data.churnCount ?? 0],
+                backgroundColor: getCssColor('--color-red-500') || '#ff4d4f',
+                hoverBackgroundColor: getCssColor('--color-red-600') || '#d9363e',
+                barPercentage: 0.7,
+                categoryPercentage: 0.7,
+                borderRadius: 4,
+              },
+              {
+                label: "Non-Churn",
+                data: [data.churnVsNonChurn.nonChurn ?? (data.totalClients - (data.churnCount ?? 0)) ?? 0],
+                backgroundColor: getCssColor('--color-green-500') || '#52c41a',
+                hoverBackgroundColor: getCssColor('--color-green-600') || '#389e0d',
+                barPercentage: 0.7,
+                categoryPercentage: 0.7,
+                borderRadius: 4,
+              },
+            ],
+          });
+        } else if (data.churnEvolution) {
+          // Si l'API renvoie une série temporelle churnEvolution: [{date, rate}, ...]
+          const labels = data.churnEvolution.map(item => item.date);
+          const churnCounts = data.churnEvolution.map(item => item.churn ?? Math.round((item.rate ?? 0) * (data.totalClients ?? 1)));
+          const nonChurnCounts = data.churnEvolution.map((item, idx) => (data.totalClientsForEachDay ? data.totalClientsForEachDay[idx] - churnCounts[idx] : 0));
+
+          setChartData({
+            labels,
+            datasets: [
+              {
+                label: "Churn",
+                data: churnCounts,
+                backgroundColor: getCssColor('--color-red-500') || '#ff4d4f',
+                hoverBackgroundColor: getCssColor('--color-red-600') || '#d9363e',
+                barPercentage: 0.7,
+                categoryPercentage: 0.7,
+                borderRadius: 4,
+              },
+              {
+                label: "Non-Churn",
+                data: nonChurnCounts,
+                backgroundColor: getCssColor('--color-green-500') || '#52c41a',
+                hoverBackgroundColor: getCssColor('--color-green-600') || '#389e0d',
+                barPercentage: 0.7,
+                categoryPercentage: 0.7,
+                borderRadius: 4,
+              },
+            ],
+          });
+        } else {
+          // fallback: simple summary bar with churn vs non-churn
+          const churn = data.churnCount ?? Math.round((data.globalChurnRate ?? 0) * (data.totalClients ?? 0));
+          const nonChurn = (data.totalClients ?? 0) - churn;
+          setChartData({
+            labels: ["This month"],
+            datasets: [
+              {
+                label: "Churn",
+                data: [churn],
+                backgroundColor: getCssColor('--color-red-500') || '#ff4d4f',
+                hoverBackgroundColor: getCssColor('--color-red-600') || '#d9363e',
+                barPercentage: 0.7,
+                categoryPercentage: 0.7,
+                borderRadius: 4,
+              },
+              {
+                label: "Non-Churn",
+                data: [nonChurn],
+                backgroundColor: getCssColor('--color-green-500') || '#52c41a',
+                hoverBackgroundColor: getCssColor('--color-green-600') || '#389e0d',
+                barPercentage: 0.7,
+                categoryPercentage: 0.7,
+                borderRadius: 4,
+              },
+            ],
+          });
+        }
+
+        setLoading(false);
+      } catch (err) {
+        if (!axios.isCancel(err)) {
+          console.error(err);
+          setError(err.message || "Erreur de récupération");
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchSummary();
+
+    return () => {
+      source.cancel("Component unmounted");
+    };
+  }, []);
+
+  // utilitaire local pour récupérer la variable CSS (ton projet a getCssVariable; si non, adapte)
+  function getCssColor(varName) {
+    try {
+      return getComputedStyle(document.documentElement).getPropertyValue(varName)?.trim() || null;
+    } catch (e) {
+      return null;
+    }
+  }
 
   return (
-    <div className="flex flex-col col-span-full sm:col-span-6 xl:col-span-4 bg-white dark:bg-gray-800 shadow-xs rounded-xl">
-      <div className="px-5 pt-5">
-        <header className="flex justify-between items-start mb-2">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Acme Plus</h2>
-          {/* Menu button */}
-          <EditMenu align="right" className="relative inline-flex">
-            <li>
-              <Link className="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex py-1 px-3" to="#0">
-                Option 1
-              </Link>
-            </li>
-            <li>
-              <Link className="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex py-1 px-3" to="#0">
-                Option 2
-              </Link>
-            </li>
-            <li>
-              <Link className="font-medium text-sm text-red-500 hover:text-red-600 flex py-1 px-3" to="#0">
-                Remove
-              </Link>
-            </li>
-          </EditMenu>
+      <div className="flex flex-col col-span-full sm:col-span-6 bg-white dark:bg-gray-800 shadow-xs rounded-xl">
+        <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
+          <h2 className="font-semibold text-gray-800 dark:text-gray-100">Résumé des prédictions</h2>
         </header>
-        <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-1">Sales</div>
-        <div className="flex items-start">
-          <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">$24,780</div>
-          <div className="text-sm font-medium text-green-700 px-1.5 bg-green-500/20 rounded-full">+49%</div>
+
+        <div className="p-4">
+          {loading && <div>Chargement des données...</div>}
+          {error && <div className="text-red-500">Erreur : {error}</div>}
+
+          {!loading && !error && summary && (
+              <>
+                <div className="mb-4">
+                  <p>Taux global de churn : <strong
+                      style={{color: '#ff4d4f'}}>{((summary.globalChurnRate ?? 0) * 100).toFixed(2)}%</strong></p>
+                  <p>Total clients analysés : <strong>{summary.totalClients ?? '-'}</strong></p>
+                  <p>Clients churn (prévu) : <strong>{summary.churnCount ?? '-'}</strong></p>
+                </div>
+
+                <div style={{width: "100%", height: 260}}>
+                  {chartData ? (
+                      <BarChart data={{
+                        labels: chartData.labels,
+                        datasets: chartData.datasets
+                      }} width={595} height={248}/>
+                  ) : (
+                      <div>Aucune donnée graphique disponible</div>
+                  )}
+                </div>
+              </>
+          )}
         </div>
       </div>
-      {/* Chart built with Chart.js 3 */}
-      <div className="grow max-sm:max-h-[128px] xl:max-h-[128px]">
-        {/* Change the height attribute to adjust the chart height */}
-        <LineChart data={chartData} width={389} height={128} />
-      </div>
-    </div>
   );
 }
 
-export default DashboardCard01;
+export default PredictionsSummaryCard;
