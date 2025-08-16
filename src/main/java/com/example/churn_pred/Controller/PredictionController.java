@@ -1,8 +1,10 @@
 package com.example.churn_pred.Controller;
 
 import com.example.churn_pred.DAO.DTO.PredictionRequest;
+import com.example.churn_pred.DAO.Entity.ChurnStat;
 import com.example.churn_pred.DAO.Entity.Client;
 import com.example.churn_pred.DAO.Entity.Prediction;
+import com.example.churn_pred.DAO.Repository.churnStatRepo;
 import com.example.churn_pred.DAO.Repository.clientRepo;
 import com.example.churn_pred.DAO.Repository.predRepo;
 import com.example.churn_pred.Service.MLservice;
@@ -19,6 +21,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,20 +30,50 @@ import java.util.*;
 
 @RestController
 @RequestMapping("predictions")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class PredictionController {
     private final MLservice mlService;
     private final clientService clientService;
     private final clientRepo clientRepository;
     private final predRepo predictionRepository;
     private final com.example.churn_pred.Service.predService.predictionService predictionService;
+    private final churnStatRepo churnStatRepository;
 
-    public PredictionController(MLservice mlService, com.example.churn_pred.Service.clientService.clientService clientService, clientRepo clientRepository, predRepo predictionRepository, predictionService predictionService) {
+    public PredictionController(MLservice mlService, com.example.churn_pred.Service.clientService.clientService clientService, clientRepo clientRepository, predRepo predictionRepository, predictionService predictionService, churnStatRepo churnStatRepository) {
         this.mlService = mlService;
         this.clientService = clientService;
         this.clientRepository = clientRepository;
         this.predictionRepository = predictionRepository;
         this.predictionService = predictionService;
+        this.churnStatRepository = churnStatRepository;
+    }
+
+    @GetMapping("/churn-evolution")
+    public List<Map<String, Object>> getChurnEvolution() {
+        LocalDate startDate = LocalDate.now().minusMonths(11);
+        LocalDate endDate = LocalDate.now();
+
+        List<ChurnStat> churnStats = churnStatRepository.findByDateBetweenOrderByDateAsc(startDate, endDate);
+
+        List<Map<String, Object>> churnData = new ArrayList<>();
+        for (ChurnStat stat : churnStats) {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("date", stat.getDate());
+            entry.put("churnRate", stat.getChurnRate());
+            churnData.add(entry);
+        }
+
+        return churnData;
+    }
+    @GetMapping("/all")
+    public List<Prediction> allPredictions(){
+        return predictionRepository.findAll();
+    }
+    @GetMapping("/historique-predictions/{cli}")
+    public List<Prediction> getHistoriquePredictions(@PathVariable("cli") Long cli) {
+        Client client = clientRepository.findByCli(cli)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Client non trouvé"));
+        return predictionService.getHistorique(client);
     }
 
     @PostMapping("/predict-batch")

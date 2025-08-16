@@ -31,4 +31,7 @@ private final predRepo pr;
                 .collect(Collectors.toList());
 
     }
+    public List<Prediction> getHistorique(Client client) {
+        return pr.findPredictionByClient(client);
+    }
 }

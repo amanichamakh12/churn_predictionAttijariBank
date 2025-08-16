@@ -42,7 +42,8 @@ public class Client {
     private Integer nb_libelles_produits;
     private Integer age;
     private Integer anciennete;
-    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+
     private List<Prediction> predictions;
 
     public Long getCli() {

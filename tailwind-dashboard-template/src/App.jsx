@@ -13,6 +13,8 @@ import './charts/ChartjsConfig.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import BatchPredictionPage from "./components/BatchPredictionPage.jsx";
 import ManualPrediction from "./components/manualPrediction.jsx";
+import Client from "./components/Client.jsx";
+import PredictionsHistory from "./components/PredictionsHistory.jsx";
 
 function App() {
 
@@ -31,6 +33,9 @@ function App() {
         <Route exact path="/" element={<Dashboard />} />
         <Route path="/batch-prediction" element={<BatchPredictionPage />} />
         <Route path="/manual-prediction" element={<ManualPrediction />} />
+        <Route path="/clients" element={<Client />} />
+        <Route path="/history" element={<PredictionsHistory />} />
+
 
 
       </Routes>

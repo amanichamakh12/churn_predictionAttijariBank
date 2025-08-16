@@ -13,10 +13,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("clients")
+@CrossOrigin(origins = "*")
 public class Clientcontroller {
     private final clientRepo clientRepository;
     private final clientService clientservice;
@@ -69,7 +74,62 @@ public class Clientcontroller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors du traitement du fichier.");
         }}
 
+    @GetMapping("/sociodemographique")
+    public Map<String, List<Client>> segmentSocioDemographique() {
+        List<Client> clients = clientRepository.findAll();
 
+        return clients.stream()
+                .collect(Collectors.groupingBy(client -> {
+                    String trancheAge;
+                    if (client.getAge() < 26) trancheAge = "18-25 ans";
+                    else if (client.getAge() < 36) trancheAge = "26-35 ans";
+                    else if (client.getAge() < 51) trancheAge = "36-50 ans";
+                    else trancheAge = "51+ ans";
+
+                    return client.getSext() + " - " + trancheAge;
+                }));
+    }
+
+    @GetMapping("/comportementale")
+    public Map<String, List<Client>> segmentComportementale() {
+        List<Client> clients = clientRepository.findAll();
+
+        return clients.stream()
+                .collect(Collectors.groupingBy(client -> {
+                    if (client.getNb_transactions() < 5) return "Occasionnels";
+                    else if (client.getNb_transactions() < 15) return "Réguliers";
+                    else return "Très actifs";
+                }));
+    }
+//recence frequence et montant
+    @GetMapping("/rfm")
+    public List<Map<String, Object>> segmentationRFM() {
+        List<Client> clients = clientRepository.findAll();
+        List<Map<String, Object>> rfmScores = new ArrayList<>();
+
+        for (Client c : clients) {
+            int recenceScore = (c.getDernier_montant() > 0) ? 5 : 1;
+            int frequenceScore = (c.getNb_transactions() > 15) ? 5 : (c.getNb_transactions() > 5 ? 3 : 1);
+            int montantScore = (c.getMontant_total() > 5000) ? 5 : (c.getMontant_total() > 1000 ? 3 : 1);
+
+            Map<String, Object> clientScore = new HashMap<>();
+            clientScore.put("CLI_id", c.getCli());
+            clientScore.put("Recence", recenceScore);// combien de temps le client a realisé sa derniere transaction
+            clientScore.put("Frequence", frequenceScore);// score de frequence de transactions
+            clientScore.put("Montant", montantScore);//
+            clientScore.put("ScoreTotal", recenceScore + frequenceScore + montantScore);
+
+            rfmScores.add(clientScore);
+        }
+
+        return rfmScores;
+    }
+
+
+    @GetMapping("/all")
+    public List<Client> getAllClients() {
+        return clientRepository.findAll();
+    }
 
 
 
