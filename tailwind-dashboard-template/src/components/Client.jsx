@@ -223,14 +223,15 @@ function ClientList() {
                                     <tbody>
                                     {predictions.map((p, i) => (
                                         <tr key={i} style={{ borderBottom: "1px solid #ddd" }}>
-                                            <td style={{ padding: "8px" }}> {new Date(item.datePrediction).toLocaleDateString("fr-FR", {
-                                                day: "2-digit",
-                                                month: "2-digit",
-                                                year: "numeric",
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                            })}</td>
-
+                                            <td style={{ padding: "8px" }}>
+                                                {new Date(p.datePrediction).toLocaleDateString("fr-FR", {
+                                                    day: "2-digit",
+                                                    month: "2-digit",
+                                                    year: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                })}
+                                            </td>
                                             <td style={{ padding: "8px" }}>{p.churnPred}</td>
                                             <td style={{ padding: "8px" }}>{p.churnProb}</td>
                                             <td style={{ padding: "8px" }}>{p.reason}</td>

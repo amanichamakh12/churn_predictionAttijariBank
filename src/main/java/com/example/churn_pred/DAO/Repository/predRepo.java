@@ -18,4 +18,5 @@ public interface predRepo extends JpaRepository<Prediction,Long> {
     long countChurn();
 
     List<Prediction> findPredictionByClient(Client client);
+    Prediction findPredictionByIdPred(Long predId);
 }

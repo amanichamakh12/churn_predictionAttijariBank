@@ -18,6 +18,7 @@ import DashboardCard12 from '../partials/dashboard/DashboardCard12.jsx';
 import DashboardCard13 from '../partials/dashboard/DashboardCard13.jsx';
 import Banner from '../partials/Banner.jsx';
 import axios from 'axios';
+import SegmentationDashboard from "../components/SegmentationDashboard.jsx";
 
 function Dashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -49,124 +50,132 @@ function Dashboard() {
         };
     }, []);
 
-    return (
-        <div className="flex h-screen overflow-hidden">
-            {/* Sidebar */}
-            <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-            {/* Content area */}
-            <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-                {/*  Site header */}
-                <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        return (
+            <div className="flex h-screen overflow-hidden">
+                {/* Sidebar */}
+                <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-                <main className="grow">
-                    <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-                        {/* Dashboard actions */}
-                        <div className="sm:flex sm:justify-between sm:items-center mb-8">
-                            {/* Left: Title */}
-                            <div className="mb-4 sm:mb-0">
-                                <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
-                                    Dashboard
-                                </h1>
+                {/* Content area */}
+                <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+                    {/*  Site header */}
+                    <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+
+                    <main className="grow">
+                        <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+                            {/* Dashboard actions */}
+                            <div className="sm:flex sm:justify-between sm:items-center mb-8">
+                                {/* Left: Title */}
+                                <div className="mb-4 sm:mb-0">
+                                    <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
+                                        Dashboard
+                                    </h1>
+                                </div>
+
+                                {/* Right: Actions */}
+                                <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+                                    <FilterButton align="right"/>
+                                    <Datepicker align="right"/>
+                                    <button className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white">
+                                        <svg className="fill-current shrink-0 xs:hidden" width="16" height="16" viewBox="0 0 16 16">
+                                            <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
+                                        </svg>
+                                        <span className="max-xs:sr-only">Add View</span>
+                                    </button>
+                                </div>
                             </div>
 
-                            {/* Right: Actions */}
-                            <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-                                <FilterButton align="right"/>
-                                <Datepicker align="right"/>
-                                <button
-                                    className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white">
-                                    <svg
-                                        className="fill-current shrink-0 xs:hidden"
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 16 16"
-                                    >
-                                        <path
-                                            d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
-                                    </svg>
-                                    <span className="max-xs:sr-only">Add View</span>
-                                </button>
+                            <div className="grid grid-cols-12 gap-6">
+                                {/* Ligne avec les 3 indicateurs côte à côte */}
+                                <div className="col-span-full grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {/* Total clients */}
+                                    <div className="flex flex-col bg-white dark:bg-gray-800 shadow-xs rounded-xl">
+                                        <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
+                                            <h2 className="font-semibold text-gray-800 dark:text-gray-100">Total clients</h2>
+                                        </header>
+                                        <div className="p-6">
+                                            {loading && <div>Chargement des données...</div>}
+                                            {error && <div className="text-red-500">Erreur : {error}</div>}
+                                            {!loading && !error && summary && (
+                                                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                                                    {summary.totalClients ?? '-'}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Nb churn client */}
+                                    <div className="flex flex-col bg-white dark:bg-gray-800 shadow-xs rounded-xl">
+                                        <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
+                                            <h2 className="font-semibold text-gray-800 dark:text-gray-100">Nb churn client</h2>
+                                        </header>
+                                        <div className="p-6">
+                                            {loading && <div>Chargement des données...</div>}
+                                            {error && <div className="text-red-500">Erreur : {error}</div>}
+                                            {!loading && !error && summary && (
+                                                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                                                    {summary.churnCount ?? "-"}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Globale churn rate */}
+                                    <div className="flex flex-col bg-white dark:bg-gray-800 shadow-xs rounded-xl">
+                                        <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
+                                            <h2 className="font-semibold text-gray-800 dark:text-gray-100">Globale churn rate</h2>
+                                        </header>
+                                        <div className="p-6">
+                                            {loading && <div>Chargement des données...</div>}
+                                            {error && <div className="text-red-500">Erreur : {error}</div>}
+                                            {!loading && !error && summary && (
+                                                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                                                    {((summary.globalChurnRate ?? 0)).toFixed(2)}%
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Deuxième ligne avec SegmentationDashboard et Churn/Non-Churn */}
+                                <div className="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* SegmentationDashboard - prend la moitié de la largeur */}
+                                    <div className="bg-white dark:bg-gray-800 shadow-xs rounded-xl">
+                                        <SegmentationDashboard/>
+                                    </div>
+
+                                    {/* Graphique Churn/Non-Churn - prend l'autre moitié */}
+                                    <div className="bg-white dark:bg-gray-800 shadow-xs rounded-xl">
+                                        <DashboardCard05/>
+                                    </div>
+                                </div>
+
+                                {/* Troisième ligne avec Sales Over Time et Sales VS Refunds */}
+                                <div className="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* Sales Over Time - prend la moitié de la largeur */}
+                                    <div className="bg-white dark:bg-gray-800 shadow-xs rounded-xl">
+                                        <DashboardCard06/>
+                                    </div>
+
+                                    {/* Sales VS Refunds - prend l'autre moitié */}
+                                    <div className="bg-white dark:bg-gray-800 shadow-xs rounded-xl">
+                                        <DashboardCard09/>
+                                    </div>
+                                </div>
+
+                                {/* Autres cartes en dessous */}
+                                <DashboardCard08/>
+                                <DashboardCard10/>
+                                <DashboardCard11/>
+                                <DashboardCard12/>
+                                <DashboardCard13/>
                             </div>
                         </div>
+                    </main>
 
-                        <div className="grid grid-cols-12 gap-6">
-                            {/* Ligne avec les 3 indicateurs côte à côte */}
-                            <div className="col-span-full grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {/* Total clients */}
-                                <div className="flex flex-col bg-white dark:bg-gray-800 shadow-xs rounded-xl">
-                                    <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-                                        <h2 className="font-semibold text-gray-800 dark:text-gray-100">
-                                            Total clients
-                                        </h2>
-                                    </header>
-                                    <div className="p-6">
-                                        {loading && <div>Chargement des données...</div>}
-                                        {error && <div className="text-red-500">Erreur : {error}</div>}
-                                        {!loading && !error && summary && (
-                                            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                                                {summary.totalClients ?? '-'}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Nb churn client */}
-                                <div className="flex flex-col bg-white dark:bg-gray-800 shadow-xs rounded-xl">
-                                    <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-                                        <h2 className="font-semibold text-gray-800 dark:text-gray-100">
-                                            Nb churn client
-                                        </h2>
-                                    </header>
-                                    <div className="p-6">
-                                        {loading && <div>Chargement des données...</div>}
-                                        {error && <div className="text-red-500">Erreur : {error}</div>}
-                                        {!loading && !error && summary && (
-                                            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                                                {summary.churnCount ?? "-"}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Globale churn rate */}
-                                <div className="flex flex-col bg-white dark:bg-gray-800 shadow-xs rounded-xl">
-                                    <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-                                        <h2 className="font-semibold text-gray-800 dark:text-gray-100">
-                                            Globale churn rate
-                                        </h2>
-                                    </header>
-                                    <div className="p-6">
-                                        {loading && <div>Chargement des données...</div>}
-                                        {error && <div className="text-red-500">Erreur : {error}</div>}
-                                        {!loading && !error && summary && (
-                                            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                                                {((summary.globalChurnRate ?? 0)).toFixed(2)}%
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Autres cartes */}
-                            <DashboardCard04/>
-                            <DashboardCard05/>
-                            <DashboardCard06/>
-                            <DashboardCard07/>
-                            <DashboardCard08/>
-                            <DashboardCard09/>
-                            <DashboardCard10/>
-                            <DashboardCard11/>
-                            <DashboardCard12/>
-                            <DashboardCard13/>
-                        </div>
-                    </div>
-                </main>
-
-                <Banner/>
+                    <Banner/>
+                </div>
             </div>
-        </div>
-    );
-}
-
+        );
+    }
 export default Dashboard;

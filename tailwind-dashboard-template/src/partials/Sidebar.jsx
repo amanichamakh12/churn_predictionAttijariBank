@@ -316,19 +316,6 @@ function Sidebar({
                               </span>
                             </NavLink>
                           </li>
-                          <li className="mb-1 last:mb-0">
-                            <NavLink
-                              end
-                              to="https://cruip.com/mosaic/"
-                              className={({ isActive }) =>
-                                "block transition duration-150 truncate " + (isActive ? "text-violet-500" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                              }
-                            >
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Profile
-                              </span>
-                            </NavLink>
-                          </li>
 
                         </ul>
                       </div>
@@ -337,7 +324,7 @@ function Sidebar({
                 }}
               </SidebarLinkGroup>
               {/* Finance */}
-              <SidebarLinkGroup activecondition={pathname.includes("finance")}>
+              {/*</*SidebarLinkGroup activecondition={pathname.includes("finance")}>
                 {(handleClick, open) => {
                   return (
                     <React.Fragment>
@@ -362,7 +349,6 @@ function Sidebar({
                               Finance
                             </span>
                           </div>
-                          {/* Icon */}
                           <div className="flex shrink-0 ml-2">
                             <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
                               <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
@@ -417,7 +403,6 @@ function Sidebar({
                   );
                 }}
               </SidebarLinkGroup>
-              {/* Job Board */}
               <SidebarLinkGroup activecondition={pathname.includes("job")}>
                 {(handleClick, open) => {
                   return (
@@ -442,7 +427,6 @@ function Sidebar({
                               Job Board
                             </span>
                           </div>
-                          {/* Icon */}
                           <div className="flex shrink-0 ml-2">
                             <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
                               <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
@@ -497,7 +481,6 @@ function Sidebar({
                   );
                 }}
               </SidebarLinkGroup>
-              {/* Tasks */}
               <SidebarLinkGroup activecondition={pathname.includes("tasks")}>
                 {(handleClick, open) => {
                   return (
@@ -522,7 +505,6 @@ function Sidebar({
                               Tasks
                             </span>
                           </div>
-                          {/* Icon */}
                           <div className="flex shrink-0 ml-2">
                             <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
                               <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
@@ -564,7 +546,6 @@ function Sidebar({
                   );
                 }}
               </SidebarLinkGroup>
-              {/* Messages */}
               <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("messages") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
                 <NavLink
                   end
@@ -583,14 +564,12 @@ function Sidebar({
                         Messages
                       </span>
                     </div>
-                    {/* Badge */}
                     <div className="flex shrink-0 ml-2">
                       <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white bg-violet-400 px-2 rounded-sm">4</span>
                     </div>
                   </div>
                 </NavLink>
               </li>
-              {/* Inbox */}
               <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("inbox") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
                 <NavLink
                   end
@@ -607,7 +586,6 @@ function Sidebar({
                   </div>
                 </NavLink>
               </li>
-              {/* Calendar */}
               <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("calendar") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
                 <NavLink
                   end
@@ -628,7 +606,6 @@ function Sidebar({
                   </div>
                 </NavLink>
               </li>
-              {/* Campaigns */}
               <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("campaigns") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
                 <NavLink
                   end
@@ -647,7 +624,6 @@ function Sidebar({
                   </div>
                 </NavLink>
               </li>
-              {/* Settings */}
               <SidebarLinkGroup activecondition={pathname.includes("settings")}>
                 {(handleClick, open) => {
                   return (
@@ -672,7 +648,6 @@ function Sidebar({
                               Settings
                             </span>
                           </div>
-                          {/* Icon */}
                           <div className="flex shrink-0 ml-2">
                             <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
                               <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
@@ -766,7 +741,6 @@ function Sidebar({
                   );
                 }}
               </SidebarLinkGroup>
-              {/* Utility */}
               <SidebarLinkGroup activecondition={pathname.includes("utility")}>
                 {(handleClick, open) => {
                   return (
@@ -792,7 +766,6 @@ function Sidebar({
                               Utility
                             </span>
                           </div>
-                          {/* Icon */}
                           <div className="flex shrink-0 ml-2">
                             <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
                               <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
@@ -875,7 +848,6 @@ function Sidebar({
               </SidebarLinkGroup>
             </ul>
           </div>
-          {/* More group */}
           <div>
             <h3 className="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
               <span className="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">
@@ -884,7 +856,6 @@ function Sidebar({
               <span className="lg:hidden lg:sidebar-expanded:block 2xl:block">More</span>
             </h3>
             <ul className="mt-3">
-              {/* Authentication */}
               <SidebarLinkGroup>
                 {(handleClick, open) => {
                   return (
@@ -907,7 +878,6 @@ function Sidebar({
                               Authentication
                             </span>
                           </div>
-                          {/* Icon */}
                           <div className="flex shrink-0 ml-2">
                             <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
                               <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
@@ -944,7 +914,6 @@ function Sidebar({
                   );
                 }}
               </SidebarLinkGroup>
-              {/* Onboarding */}
               <SidebarLinkGroup>
                 {(handleClick, open) => {
                   return (
@@ -967,7 +936,6 @@ function Sidebar({
                               Onboarding
                             </span>
                           </div>
-                          {/* Icon */}
                           <div className="flex shrink-0 ml-2">
                             <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
                               <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
@@ -1011,7 +979,6 @@ function Sidebar({
                   );
                 }}
               </SidebarLinkGroup>
-              {/* Components */}
               <SidebarLinkGroup activecondition={pathname.includes("component")}>
                 {(handleClick, open) => {
                   return (
@@ -1036,7 +1003,6 @@ function Sidebar({
                               Components
                             </span>
                           </div>
-                          {/* Icon */}
                           <div className="flex shrink-0 ml-2">
                             <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
                               <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
@@ -1225,7 +1191,6 @@ function Sidebar({
           </div>
         </div>
 
-        {/* Expand / collapse button */}
         <div className="pt-3 hidden lg:inline-flex 2xl:hidden justify-end mt-auto">
           <div className="w-12 pl-4 pr-3 py-2">
             <button className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400" onClick={() => setSidebarExpanded(!sidebarExpanded)}>
@@ -1234,10 +1199,9 @@ function Sidebar({
                 <path d="M15 16a1 1 0 0 1-1-1V1a1 1 0 1 1 2 0v14a1 1 0 0 1-1 1ZM8.586 7H1a1 1 0 1 0 0 2h7.586l-2.793 2.793a1 1 0 1 0 1.414 1.414l4.5-4.5A.997.997 0 0 0 12 8.01M11.924 7.617a.997.997 0 0 0-.217-.324l-4.5-4.5a1 1 0 0 0-1.414 1.414L8.586 7M12 7.99a.996.996 0 0 0-.076-.373Z" />
               </svg>
             </button>
-          </div>
-        </div>
-      </div>
-    </div>
+          </div>*/}
+
+            </ul></div></div></div></div>
   );
 }
 

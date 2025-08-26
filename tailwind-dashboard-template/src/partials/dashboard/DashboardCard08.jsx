@@ -1,102 +1,78 @@
-import React from 'react';
-import { chartAreaGradient } from '../../charts/ChartjsConfig.jsx';
+import React, { useEffect, useState } from 'react';
 import LineChart from '../../charts/LineChart02.jsx';
-
-// Import utilities
 import { getCssVariable } from '../../utils/Utils.js';
+import axios from 'axios';
 
 function DashboardCard08() {
+  const [chartData, setChartData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const chartData = {
-    labels: [
-      '12-01-2022',
-      '01-01-2023',
-      '02-01-2023',
-      '03-01-2023',
-      '04-01-2023',
-      '05-01-2023',
-      '06-01-2023',
-      '07-01-2023',
-      '08-01-2023',
-      '09-01-2023',
-      '10-01-2023',
-      '11-01-2023',
-      '12-01-2023',
-      '01-01-2024',
-      '02-01-2024',
-      '03-01-2024',
-      '04-01-2024',
-      '05-01-2024',
-      '06-01-2024',
-      '07-01-2024',
-      '08-01-2024',
-      '09-01-2024',
-      '10-01-2024',
-      '11-01-2024',
-      '12-01-2024',
-      '01-01-2025',
-    ],
-    datasets: [
-      // Indigo line
-      {
-        label: 'Current',
-        data: [73, 64, 73, 69, 104, 104, 164, 164, 120, 120, 120, 148, 142, 104, 122, 110, 104, 152, 166, 233, 268, 252, 284, 284, 333, 323],
-        borderColor: getCssVariable('--color-violet-500'),
-        fill: false,
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 3,
-        pointBackgroundColor: getCssVariable('--color-violet-500'),
-        pointHoverBackgroundColor: getCssVariable('--color-violet-500'),
-        pointBorderWidth: 0,
-        pointHoverBorderWidth: 0,
-        clip: 20,
-        tension: 0.2,
-      },
-      // Blue line
-      {
-        label: 'Previous',
-        data: [184, 86, 42, 378, 42, 243, 38, 120, 0, 0, 42, 0, 84, 0, 276, 0, 124, 42, 124, 88, 88, 215, 156, 88, 124, 64],
-        borderColor: getCssVariable('--color-sky-500'),
-        fill: false,
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 3,
-        pointBackgroundColor: getCssVariable('--color-sky-500'),
-        pointHoverBackgroundColor: getCssVariable('--color-sky-500'),
-        pointBorderWidth: 0,
-        pointHoverBorderWidth: 0,
-        clip: 20,
-        tension: 0.2,
-      },
-      // green line
-      {
-        label: 'Average',
-        data: [122, 170, 192, 86, 102, 124, 115, 115, 56, 104, 0, 72, 208, 186, 223, 188, 114, 162, 200, 150, 118, 118, 76, 122, 230, 268],
-        borderColor: getCssVariable('--color-green-500'),
-        fill: false,
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 3,
-        pointBackgroundColor: getCssVariable('--color-green-500'),
-        pointHoverBackgroundColor: getCssVariable('--color-green-500'),
-        pointBorderWidth: 0,
-        pointHoverBorderWidth: 0,
-        clip: 20,
-        tension: 0.2,
-      },
-    ],
-  };
+  useEffect(() => {
+    const fetchChurnData = async () => {
+      try {
+        const res = await axios.get('http://localhost:8090/clients/dailyChurn');
+        const data = res.data;
+
+        // Extraire les labels et datasets depuis l'API
+        const labels = data.map(item => item.date);
+        const churnRates = data.map(item => item.churnRate);
+        const nonChurnRates = data.map(item => item.nonChurnRate);
+
+        setChartData({
+          labels,
+          datasets: [
+            {
+              label: 'Churn Rate (%)',
+              data: churnRates,
+              borderColor: getCssVariable('--color-red-500'),
+              fill: false,
+              borderWidth: 2,
+              pointRadius: 0,
+              pointHoverRadius: 3,
+              pointBackgroundColor: getCssVariable('--color-red-500'),
+              pointHoverBackgroundColor: getCssVariable('--color-red-500'),
+              tension: 0.2,
+            },
+            {
+              label: 'Non Churn Rate (%)',
+              data: nonChurnRates,
+              borderColor: getCssVariable('--color-green-500'),
+              fill: false,
+              borderWidth: 2,
+              pointRadius: 0,
+              pointHoverRadius: 3,
+              pointBackgroundColor: getCssVariable('--color-green-500'),
+              pointHoverBackgroundColor: getCssVariable('--color-green-500'),
+              tension: 0.2,
+            },
+          ],
+        });
+      } catch (err) {
+        setError(err.message || 'Erreur de récupération des données');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChurnData();
+  }, []);
 
   return (
-    <div className="flex flex-col col-span-full sm:col-span-6 bg-white dark:bg-gray-800 shadow-xs rounded-xl">
-      <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex items-center">
-        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Sales Over Time (all stores)</h2>
-      </header>
-      {/* Chart built with Chart.js 3 */}
-      {/* Change the height attribute to adjust the chart height */}
-      <LineChart data={chartData} width={595} height={248} />
-    </div>
+      <div className="flex flex-col col-span-full sm:col-span-6 bg-white dark:bg-gray-800 shadow-xs rounded-xl">
+        <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex items-center">
+          <h2 className="font-semibold text-gray-800 dark:text-gray-100">
+            Churn Rate Over Time
+          </h2>
+        </header>
+        <div className="p-6">
+          {loading && <div>Chargement...</div>}
+          {error && <div className="text-red-500">{error}</div>}
+          {!loading && !error && chartData && (
+              <LineChart data={chartData} width={595} height={248} />
+          )}
+        </div>
+      </div>
   );
 }
 

@@ -1,109 +1,50 @@
-import React, { useEffect, useState } from 'react';
-import Tooltip from '../../components/Tooltip.jsx';
-import {
-    Chart as ChartJS,
-    LineElement,
-    PointElement,
-    CategoryScale,
-    LinearScale,
-    Title,
-    Tooltip as ChartTooltip,
-    Legend,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from "recharts";
 
-ChartJS.register(
-    LineElement,
-    PointElement,
-    CategoryScale,
-    LinearScale,
-    Title,
-    ChartTooltip,
-    Legend
-);
+const COLORS = ["#1E3A8A", "#3B82F6", "#60A5FA"];
 
 function DashboardCard05() {
-    const [chartData, setChartData] = useState(null);
+    const [comportementale, setComportementale] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Remplace par ton vrai endpoint
-        axios
-            .get('http://localhost:8090/predictions/churn-evolution')
-            .then((res) => {
-                const data = res.data;
-
-                // Supposons que ton API renvoie :
-                // [{ date: '2025-01-01', churnRate: 12 }, ... ]
-                const labels = data.map((item) => item.date);
-                const churnRates = data.map((item) => item.churnRate);
-
-                setChartData({
-                    labels,
-                    datasets: [
-                        {
-                            label: 'Taux de Churn (%)',
-                            data: churnRates,
-                            fill: true,
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)', // bleu clair transparent
-                            borderColor: '#3B82F6', // bleu
-                            borderWidth: 2,
-                            tension: 0.3,
-                            pointRadius: 3,
-                            pointBackgroundColor: '#3B82F6',
-                            pointHoverRadius: 5,
-                        },
-                    ],
-                });
-
+        const fetchData = async () => {
+            try {
+                const resComp = await axios.get("http://localhost:8090/clients/comportementale");
+                setComportementale(resComp.data);
+            } catch (err) {
+                setError("Erreur lors du chargement des données");
+            } finally {
                 setLoading(false);
-            })
-            .catch((err) => {
-                setError(err.message || 'Erreur de récupération');
-                setLoading(false);
-            });
+            }
+        };
+        fetchData();
     }, []);
 
+    if (loading) return <p className="text-center py-6">Chargement...</p>;
+    if (error) return <p className="text-center py-6 text-red-500">{error}</p>;
+
+    const compData = Object.entries(comportementale).map(([segment, clients]) => ({
+        segment,
+        clients: clients.length
+    }));
+
     return (
-        <div className="flex flex-col col-span-full sm:col-span-6 bg-white dark:bg-gray-800 shadow-xs rounded-xl">
-            <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex items-center">
-                <h2 className="font-semibold text-gray-800 dark:text-gray-100">
-                    Évolution du Churn dans le temps
-                </h2>
-                <Tooltip className="ml-2">
-                    <div className="text-xs text-center whitespace-nowrap">
-                        Basé sur <a className="underline" href="https://www.chartjs.org/" target="_blank" rel="noreferrer">Chart.js</a>
-                    </div>
-                </Tooltip>
-            </header>
-            <div className="p-6">
-                {loading && <div>Chargement...</div>}
-                {error && <div className="text-red-500">{error}</div>}
-                {!loading && !error && chartData && (
-                    <Line
-                        data={chartData}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                            },
-                            scales: {
-                                y: {
-                                    ticks: { color: '#6B7280', callback: (value) => value + '%' },
-                                    grid: { color: '#E5E7EB' },
-                                },
-                                x: {
-                                    ticks: { color: '#6B7280' },
-                                    grid: { color: '#F3F4F6' },
-                                },
-                            },
-                        }}
-                        height={250}
-                    />
-                )}
+        <div className="p-6">
+            <h2 className="text-2xl font-bold mb-6">Behavioral Segmentation</h2>
+            <div className="w-full h-96">
+                <ResponsiveContainer>
+                    <BarChart data={compData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="segment" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="clients" fill={COLORS[0]} />
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
         </div>
     );

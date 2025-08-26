@@ -1,5 +1,6 @@
 package com.example.churn_pred.Controller;
 
+import com.example.churn_pred.DAO.DTO.ClientDTO;
 import com.example.churn_pred.DAO.DTO.PredictionRequest;
 import com.example.churn_pred.DAO.Entity.ChurnStat;
 import com.example.churn_pred.DAO.Entity.Client;
@@ -16,6 +17,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +50,7 @@ public class PredictionController {
         this.churnStatRepository = churnStatRepository;
     }
 
+
     @GetMapping("/churn-evolution")
     public List<Map<String, Object>> getChurnEvolution() {
         LocalDate startDate = LocalDate.now().minusMonths(11);
@@ -69,6 +72,7 @@ public class PredictionController {
     public List<Prediction> allPredictions(){
         return predictionRepository.findAll();
     }
+
     @GetMapping("/historique-predictions/{cli}")
     public List<Prediction> getHistoriquePredictions(@PathVariable("cli") Long cli) {
         Client client = clientRepository.findByCli(cli)
@@ -145,7 +149,34 @@ public class PredictionController {
             return ResponseEntity.ok(predictionResults);
         }
     }
-    @PostMapping("/predict")
+    @GetMapping("/getclient/{idPred}")
+    @Transactional
+
+    public ClientDTO getClientOfPrediction(@PathVariable("idPred") Long idPred) {
+        Prediction pred = predictionRepository.findPredictionByIdPred(idPred);
+        Client c = pred.getClient();
+
+        return new ClientDTO(
+                c.getCli(),
+                c.getSext(),
+                c.getNbenf(),
+                c.getSeg(),
+                c.getNb_transactions(),
+                c.getMontant_total(),
+                c.getMontant_moyen(),
+                c.getMontant_max(),
+                c.getMontant_min(),
+                c.getDernier_type_op(),
+                c.getDernier_montant(),
+                c.getNb_types_produits(),
+                c.getNb_libelles_produits(),
+                c.getAge(),
+                c.getAnciennete()
+        );
+    }
+
+
+        @PostMapping("/predict")
     public ResponseEntity<String> receivePrediction(@RequestBody PredictionRequest request) {
         Client client = clientService.enregistrerClient(request);
         clientService.updateClient(client);

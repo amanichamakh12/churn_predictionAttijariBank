@@ -1,8 +1,10 @@
 package com.example.churn_pred.Controller;
 
 import com.example.churn_pred.DAO.Entity.Client;
+import com.example.churn_pred.DAO.Entity.Prediction;
 import com.example.churn_pred.DAO.Repository.clientRepo;
 import com.example.churn_pred.Service.clientService.clientService;
+import com.example.churn_pred.Service.predService.predictionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +15,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,10 +29,12 @@ import java.util.stream.Collectors;
 public class Clientcontroller {
     private final clientRepo clientRepository;
     private final clientService clientservice;
+    private final com.example.churn_pred.Service.predService.predictionService predictionService;
 
-    public Clientcontroller(clientRepo clientRepository, clientService clientservice) {
+    public Clientcontroller(clientRepo clientRepository, clientService clientservice, predictionService predictionService) {
         this.clientRepository = clientRepository;
         this.clientservice = clientservice;
+        this.predictionService = predictionService;
     }
 
     @PostMapping("/save")
@@ -74,20 +80,71 @@ public class Clientcontroller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors du traitement du fichier.");
         }}
 
-    @GetMapping("/sociodemographique")
-    public Map<String, List<Client>> segmentSocioDemographique() {
+    @GetMapping("/getClient")
+    public Client getClientbyPred(@RequestBody Prediction pred) {
+        Client client = clientRepository.findClientByPredictions(pred);
+        return client;
+    }
+    @GetMapping("/dailyChurn")
+    public List<Map<String, Object>> getDailyChurn() {
+
         List<Client> clients = clientRepository.findAll();
 
-        return clients.stream()
-                .collect(Collectors.groupingBy(client -> {
-                    String trancheAge;
-                    if (client.getAge() < 26) trancheAge = "18-25 ans";
-                    else if (client.getAge() < 36) trancheAge = "26-35 ans";
-                    else if (client.getAge() < 51) trancheAge = "36-50 ans";
-                    else trancheAge = "51+ ans";
+        Map<LocalDate, List<Prediction>> predictionsByDate = new HashMap<>();
 
-                    return client.getSext() + " - " + trancheAge;
-                }));
+        for (Client client : clients) {
+            List<Prediction> predictions = client.getPredictions();
+            for (Prediction p : predictions) {
+                LocalDateTime dateTime = p.getDatePrediction();
+                LocalDate date = LocalDate.from(dateTime);
+                predictionsByDate.computeIfAbsent(date, k -> new ArrayList<>()).add(p);
+            }
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        predictionsByDate.keySet().stream().sorted().forEach(date -> {
+            List<Prediction> preds = predictionsByDate.get(date);
+
+            long churnCount = preds.stream()
+                    .filter(p -> "CHURN".equalsIgnoreCase(p.getChurnPred()))
+                    .count();
+
+            long nonChurnCount = preds.stream()
+                    .filter(p -> "NON-CHURN".equalsIgnoreCase(p.getChurnPred()))
+                    .count();
+
+            long total = preds.size();
+            double churnRate = total > 0 ? ((double) churnCount / total) * 100 : 0;
+            double nonChurnRate = total > 0 ? ((double) nonChurnCount / total) * 100 : 0;
+
+            Map<String, Object> dailyData = new HashMap<>();
+            dailyData.put("date", date.toString());
+            dailyData.put("churnRate", Math.round(churnRate * 100.0) / 100.0);
+            dailyData.put("nonChurnRate", Math.round(nonChurnRate * 100.0) / 100.0);
+
+            result.add(dailyData);
+        });
+
+        return result;
+    }
+
+
+
+    @GetMapping("/sociodemographique")
+    public Map<String, Map<String, List<Client>>> segmentSocioDemographique() {
+        List<Client> churnClients = clientRepository.findAll()
+                .stream()
+                .filter(Client::isChurn)
+                .toList();
+
+        return churnClients.stream()
+                .collect(Collectors.groupingBy(client -> {
+                    if (client.getAge() < 26) return "18-25 ans";
+                    else if (client.getAge() < 36) return "26-35 ans";
+                    else if (client.getAge() < 51) return "36-50 ans";
+                    else return "51+ ans";
+                }, Collectors.groupingBy(Client::getSext)));
     }
 
     @GetMapping("/comportementale")
@@ -95,6 +152,7 @@ public class Clientcontroller {
         List<Client> clients = clientRepository.findAll();
 
         return clients.stream()
+                .filter(Client::isChurn)
                 .collect(Collectors.groupingBy(client -> {
                     if (client.getNb_transactions() < 5) return "Occasionnels";
                     else if (client.getNb_transactions() < 15) return "Réguliers";

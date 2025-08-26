@@ -1,5 +1,7 @@
 package com.example.churn_pred.DAO.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,6 +17,7 @@ import java.util.List;
 @Builder
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class Client {
     @Id
@@ -43,6 +46,7 @@ public class Client {
     private Integer age;
     private Integer anciennete;
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnore
 
     private List<Prediction> predictions;
 
@@ -172,5 +176,11 @@ public class Client {
 
     public void setPredictions(List<Prediction> predictions) {
         this.predictions = predictions;
+    }
+
+    public boolean isChurn() {
+        if (predictions == null || predictions.isEmpty()) return false;
+        Prediction lastPrediction = predictions.get(predictions.size() - 1);
+        return lastPrediction.getChurnPred().equalsIgnoreCase("CHURN");
     }
 }
