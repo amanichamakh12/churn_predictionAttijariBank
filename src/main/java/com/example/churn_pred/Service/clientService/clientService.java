@@ -19,12 +19,10 @@ public class clientService implements IclientService {
     @Autowired
     private clientRepo cr;
 
-
     @Override
     public Client enregistrerClient(PredictionRequest predRequest) {
         Client newclient = predRequest.getClient();
 
-        // Étape 1 : log des infos reçues
         System.out.println("📥 Données reçues du client : " + newclient);
 
         Optional<Client> existingClientOpt = cr.findByCli(newclient.getCli());
@@ -32,7 +30,6 @@ public class clientService implements IclientService {
         if (existingClientOpt.isPresent()) {
             System.out.println("✅ Client existe déjà avec le CLI : " + newclient.getCli());
 
-            // Étape 2 : log avant mise à jour
             System.out.println("🔄 Mise à jour du client existant...");
 
             updateClient(newclient);

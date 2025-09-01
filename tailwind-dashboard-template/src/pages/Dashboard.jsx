@@ -158,17 +158,11 @@ function Dashboard() {
                                     </div>
 
                                     {/* Sales VS Refunds - prend l'autre moitié */}
-                                    <div className="bg-white dark:bg-gray-800 shadow-xs rounded-xl">
-                                        <DashboardCard09/>
-                                    </div>
                                 </div>
-
-                                {/* Autres cartes en dessous */}
-                                <DashboardCard08/>
-                                <DashboardCard10/>
+                                { /*<DashboardCard10/>
                                 <DashboardCard11/>
                                 <DashboardCard12/>
-                                <DashboardCard13/>
+                                <DashboardCard13/>*/}
                             </div>
                         </div>
                     </main>
